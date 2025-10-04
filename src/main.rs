@@ -5,15 +5,12 @@ mod handlers;
 mod models;
 mod storage;
 
-use std::{sync::Arc, time::Duration};
-
 use axum::{
     Router, middleware,
     routing::{delete, get, put},
 };
 use handlers::objects::AppState;
 use storage::{FileStorage, MetadataStore};
-use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tower_http::{
     cors::CorsLayer,
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
@@ -43,11 +40,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     tracing::debug!("Storage path: {}", config.storage_path);
     tracing::debug!("Database URL: {}", config.database_url);
-    tracing::debug!(
-        "Rate limit: {} req/s, burst: {}",
-        config.rate_limit_per_second,
-        config.rate_limit_burst_size
-    );
     tracing::debug!("Max upload size: {} MB", config.max_upload_size_mb);
 
     let metadata = MetadataStore::new(&config.database_url).await?;
@@ -55,24 +47,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let storage = FileStorage::new(&config.storage_path).await?;
     tracing::info!("File storage initialized");
-
-    let governor_conf = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_second(config.rate_limit_per_second)
-            .burst_size(config.rate_limit_burst_size)
-            .finish()
-            .unwrap(),
-    );
-
-    let governor_limiter = governor_conf.limiter().clone();
-    let interval = Duration::from_secs(60);
-    std::thread::spawn(move || {
-        loop {
-            std::thread::sleep(interval);
-            tracing::debug!("rate limit storage size: {}", governor_limiter.len());
-            governor_limiter.retain_recent();
-        }
-    });
 
     let state = AppState {
         metadata,
@@ -108,8 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::auth_middleware,
-        ))
-        .layer(GovernorLayer::new(governor_conf.clone()));
+        ));
 
     let app = Router::new()
         .route("/", get(handlers::index::index))
@@ -126,6 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr = format!("{}:{}", config.server_host, config.server_port);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
+    tracing::info!("lila server running on http://{}", addr);
     tracing::info!("GitHub: https://github.com/aprlpet/lila");
 
     axum::serve(listener, app).await?;

@@ -238,14 +238,20 @@ impl MetadataStore {
     }
 
     pub async fn get_stats(&self) -> Result<(i64, i64)> {
+        tracing::debug!("Executing stats query");
+
         let row = sqlx::query(
             "SELECT COUNT(*) as count, COALESCE(SUM(size), 0) as total_size FROM objects",
         )
         .fetch_one(&self.pool)
         .await?;
 
-        let count: i64 = row.try_get(0).unwrap_or(0);
-        let total_size: i64 = row.try_get(1).unwrap_or(0);
+        tracing::debug!("Stats query completed, extracting values");
+
+        let count: i64 = row.get("count");
+        let total_size: i64 = row.get("total_size");
+
+        tracing::debug!("Extracted count: {}, total_size: {}", count, total_size);
 
         Ok((count, total_size))
     }

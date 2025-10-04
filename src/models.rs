@@ -44,20 +44,8 @@ pub struct Config {
     pub storage_path: String,
     pub database_url: String,
     pub auth_token: String,
-    #[serde(default = "default_rate_limit")]
-    pub rate_limit_per_second: u64,
-    #[serde(default = "default_burst_size")]
-    pub rate_limit_burst_size: u32,
     #[serde(default = "default_max_upload_size")]
     pub max_upload_size_mb: usize,
-}
-
-fn default_rate_limit() -> u64 {
-    10
-}
-
-fn default_burst_size() -> u32 {
-    20
 }
 
 fn default_max_upload_size() -> usize {

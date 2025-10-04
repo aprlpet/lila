@@ -7,8 +7,6 @@ server_port = 3000
 storage_path = "./data/objects"
 database_url = "sqlite:./data/metadata.db"
 auth_token = "owo"
-rate_limit_per_second = 10
-rate_limit_burst_size = 20
 max_upload_size_mb = 100
 "#;
 

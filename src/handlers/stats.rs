@@ -5,15 +5,29 @@ use crate::{error::Result, handlers::objects::AppState, models::StatsResponse};
 pub async fn get_stats(State(state): State<AppState>) -> Result<Json<StatsResponse>> {
     tracing::info!("GET request for stats");
 
-    let (total_objects, total_size) = state.metadata.get_stats().await?;
+    let stats_result = state.metadata.get_stats().await;
 
-    let stats = StatsResponse {
-        total_objects,
-        total_size,
-        storage_path: state.storage.clone().base_path.display().to_string(),
-    };
+    match stats_result {
+        Ok((total_objects, total_size)) => {
+            tracing::info!(
+                "Stats retrieved: {} objects, {} bytes",
+                total_objects,
+                total_size
+            );
 
-    tracing::debug!("Stats: {} objects, {} bytes", total_objects, total_size);
+            let stats = StatsResponse {
+                total_objects,
+                total_size,
+                storage_path: state.storage.clone().base_path.display().to_string(),
+            };
 
-    Ok(Json(stats))
+            tracing::debug!("Stats: {} objects, {} bytes", total_objects, total_size);
+
+            Ok(Json(stats))
+        }
+        Err(e) => {
+            tracing::error!("Failed to get stats: {:?}", e);
+            Err(e)
+        }
+    }
 }
