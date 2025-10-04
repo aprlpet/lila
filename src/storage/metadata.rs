@@ -244,6 +244,9 @@ impl MetadataStore {
         .fetch_one(&self.pool)
         .await?;
 
-        Ok((row.get(0), row.get(1)))
+        let count: i64 = row.try_get(0).unwrap_or(0);
+        let total_size: i64 = row.try_get(1).unwrap_or(0);
+
+        Ok((count, total_size))
     }
 }
