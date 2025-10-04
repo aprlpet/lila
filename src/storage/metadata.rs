@@ -244,6 +244,6 @@ impl MetadataStore {
         .fetch_one(&self.pool)
         .await?;
 
-        Ok((row.get("count"), row.get("total_size")))
+        Ok((row.get(0), row.get(1)))
     }
 }
