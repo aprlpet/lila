@@ -2,8 +2,7 @@ use std::{fs, path::Path};
 
 use crate::models::Config;
 
-const DEFAULT_CONFIG: &str = 
-r#"server_host = "127.0.0.1"
+const DEFAULT_CONFIG: &str = r#"server_host = "127.0.0.1"
 server_port = 3000
 storage_path = "./data/objects"
 database_url = "sqlite:./data/metadata.db"

@@ -15,8 +15,8 @@ use handlers::objects::AppState;
 use storage::{FileStorage, MetadataStore};
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tower_http::{
-    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     cors::CorsLayer,
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
 };
 use tracing::Level;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
