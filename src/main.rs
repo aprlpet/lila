@@ -99,7 +99,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr = format!("{}:{}", config.server_host, config.server_port);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    tracing::info!("lila server running on http://{}", addr);
     tracing::info!("GitHub: https://github.com/aprlpet/lila");
 
     axum::serve(listener, app).await?;
