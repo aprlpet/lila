@@ -15,7 +15,7 @@ pub async fn index() -> impl IntoResponse {
     <style>
         @font-face {
             font-family: 'Iosevka Term';
-            src: url('https://github.com/aprlpet/aprlpet/raw/refs/heads/mommy/Iosevka.ttf') format('truetype');
+            src: url('https://aprl.pet/_astro/Iosevka.B08RWT9K.ttf') format('truetype');
             font-weight: 400;
             font-display: swap;
         }
