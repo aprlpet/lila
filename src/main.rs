@@ -14,7 +14,10 @@ use axum::{
 use handlers::objects::AppState;
 use storage::{FileStorage, MetadataStore};
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
-use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tower_http::{
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
+    cors::CorsLayer,
+};
 use tracing::Level;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -78,6 +81,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         max_upload_size: config.max_upload_size_mb,
     };
 
+    let cors = CorsLayer::permissive();
+
     let protected_routes = Router::new()
         .route("/api/v1/objects", get(handlers::objects::list_objects))
         .route("/api/v1/objects/{*key}", put(handlers::objects::put_object))
@@ -111,6 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/favicon.ico", get(handlers::index::favicon))
         .route("/github", get(handlers::index::github_redirect))
         .merge(protected_routes)
+        .layer(cors)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
